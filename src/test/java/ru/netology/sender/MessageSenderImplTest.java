@@ -17,19 +17,30 @@ class MessageSenderImplTest {
 
     @Test
     void send() {
+        String testIp1 = "172.17.17.17";
+        String testIp2 = "173.17.17.17";
+
         GeoService geoService = Mockito.mock(GeoService.class);
-        Mockito.when(geoService.byIp(Mockito.anyString()))
+        Mockito.when(geoService.byIp(testIp1))
                 .thenReturn(new Location("Barnaul", Country.RUSSIA, "Yurina street", 111));
+        Mockito.when(geoService.byIp(testIp2))
+                .thenReturn(new Location("Boston", Country.USA, "George street", 27));
 
         LocalizationService localizationService = Mockito.mock(LocalizationService.class);
-        Mockito.when(localizationService.locale(Mockito.any(Country.class)))
+        Mockito.when(localizationService.locale(Country.RUSSIA))
                 .thenReturn("Добро пожаловать");
+        Mockito.when(localizationService.locale(Country.USA))
+                .thenReturn("Welcome");
 
         MessageSender messageSender = new MessageSenderImpl(geoService, localizationService);
 
-        HashMap<String, String> map = new HashMap<String, String>();
-        map.put("x-real-ip", "172.17.17.17");
+        HashMap<String, String> map1 = new HashMap<String, String>();
+        map1.put("x-real-ip", testIp1);
 
-        Assertions.assertEquals(messageSender.send(map), "Добро пожаловать");
+        HashMap<String, String> map2 = new HashMap<String, String>();
+        map2.put("x-real-ip", testIp2);
+
+        Assertions.assertEquals(messageSender.send(map1), "Добро пожаловать");
+        Assertions.assertEquals(messageSender.send(map2), "Welcome");
     }
 }
